@@ -27,3 +27,5 @@ bin
 obj
 
 /build
+.idea/
+cmake-build-debug/
