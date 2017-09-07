@@ -185,7 +185,7 @@ typedef enum verify_flags_type
  BCK_API verify_result_type verify_script(const unsigned char* transaction,
     size_t transaction_size, const unsigned char* prevout_script,
     size_t prevout_script_size, unsigned int tx_input_index,
-    unsigned int flags);
+    unsigned int flags, unsigned int amount);
 
 } // namespace consensus
 } // namespace libbitcoin

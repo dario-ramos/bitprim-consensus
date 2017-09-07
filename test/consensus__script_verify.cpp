@@ -24,6 +24,8 @@
 #include <vector>
 #include <bitcoin/consensus.hpp>
 #include <boost/test/unit_test.hpp>
+#include <iostream>
+#include <clone/script/interpreter.h>
 
 BOOST_AUTO_TEST_SUITE(consensus__script_verify)
 
@@ -72,15 +74,16 @@ static bool decode_base16(data_chunk& out, const std::string& in)
 
 static verify_result test_verify(const std::string& transaction,
     const std::string& prevout_script, uint32_t tx_input_index=0,
-    const uint32_t flags=verify_flags_p2sh, int32_t tx_size_hack=0)
+    const uint32_t flags=verify_flags_p2sh, int32_t tx_size_hack=0, uint64_t amount = 0 )
 {
     data_chunk tx_data, prevout_script_data;
     BOOST_REQUIRE(decode_base16(tx_data, transaction));
     BOOST_REQUIRE(decode_base16(prevout_script_data, prevout_script));
     return verify_script(&tx_data[0], tx_data.size() + tx_size_hack,
         &prevout_script_data[0], prevout_script_data.size(), tx_input_index,
-        flags);
+        flags, amount);
 }
+
 
 // Test cases derived from:
 // github.com/libbitcoin/libbitcoin-explorer/wiki/How-to-Spend-Bitcoin
@@ -94,14 +97,14 @@ BOOST_AUTO_TEST_CASE(consensus__script_verify__null_tx__throws_invalid_argument)
 {
     data_chunk prevout_script_data;
     BOOST_REQUIRE(decode_base16(prevout_script_data, CONSENSUS_SCRIPT_VERIFY_PREVOUT_SCRIPT));
-    BOOST_REQUIRE_THROW(verify_script(NULL, 1, &prevout_script_data[0], prevout_script_data.size(), 0, 0), std::invalid_argument);
+    BOOST_REQUIRE_THROW(verify_script(NULL, 1, &prevout_script_data[0], prevout_script_data.size(), 0, 0, 0), std::invalid_argument);
 }
 
 BOOST_AUTO_TEST_CASE(consensus__script_verify__null_prevout_script__throws_invalid_argument)
 {
     data_chunk tx_data;
     BOOST_REQUIRE(decode_base16(tx_data, CONSENSUS_SCRIPT_VERIFY_TX));
-    BOOST_REQUIRE_THROW(verify_script(&tx_data[0], tx_data.size(), NULL, 1, 0, 0), std::invalid_argument);
+    BOOST_REQUIRE_THROW(verify_script(&tx_data[0], tx_data.size(), NULL, 1, 0, 0, 0), std::invalid_argument);
 }
 
 BOOST_AUTO_TEST_CASE(consensus__script_verify__invalid_tx__tx_invalid)
@@ -137,6 +140,25 @@ BOOST_AUTO_TEST_CASE(consensus__script_verify__incorrect_pubkey_hash__equalverif
 BOOST_AUTO_TEST_CASE(consensus__script_verify__valid__true)
 {
     const verify_result result = test_verify(CONSENSUS_SCRIPT_VERIFY_TX, CONSENSUS_SCRIPT_VERIFY_PREVOUT_SCRIPT);
+    BOOST_REQUIRE_EQUAL(result, verify_result_eval_true);
+
+}
+
+BOOST_AUTO_TEST_CASE(consensus__script_verify__valid__true__non_forkid)
+{
+    std::string CONSENSUS_FORKID_TX="0100000001f2ca1aebc2e51b345f87365bdfa4956aaa5443cfb38f58e75318e3a3d3f1462e000000006b483045022100845a35869063291e4610de4939ac76f123a0b11b74e0615694a09206c30afbfc022063347ec313a582ab2025863ebdca71015ffc698eb37dbbf679b2865be944cf79012102fee381c90149e22ae182156c16316c24fe680a0e617646c3d58531112ac82e29ffffffff01b2e60200000000001976a914b96b816f378babb1fe585b7be7a2cd16eb99b3e488ac00000000";
+    std::string CONSENSUS_FORKID_TX_PREV_SCRIPT = "76a914b96b816f378babb1fe585b7be7a2cd16eb99b3e488ac";
+    const verify_result result = test_verify(CONSENSUS_FORKID_TX, CONSENSUS_FORKID_TX_PREV_SCRIPT);
+    BOOST_REQUIRE_EQUAL(result, verify_result_eval_true);
+}
+
+BOOST_AUTO_TEST_CASE(consensus__script_verify__valid__true__forkid)
+{
+    std::string CONSENSUS_FORKID_TX="0200000001131df2e09cd21da7897b9be4dba49fabb49ca979c569c2e1c80ea942748df144000000006a473044022005faf4f6726817a2a81288694bd73473ccaa610ffd4f356323e861285e5b6119022010eee370ce7be0f4c7cdca9bbc6129b648b2c555499bb2c926637df947c86aae412103e18167f4be43032ce2e62f559fef271902e8ce1aaaf0d518a6a2f40d4e01ad47ffffffff02fa6e1c05000000001976a9140bd183d2e2333b99fc4d5c70377f8bc0645d30b188aca0860100000000001976a91405ef21a2ee76c2015eaf9f1d57b6e85137f05cfc88ac00000000";
+    std::string CONSENSUS_FORKID_TX_PREV_SCRIPT = "76a9140bd183d2e2333b99fc4d5c70377f8bc0645d30b188ac";
+    int CONSENSUS_FORKID_TX_AMMOUT = 85899498;
+
+    const verify_result result = test_verify(CONSENSUS_FORKID_TX, CONSENSUS_FORKID_TX_PREV_SCRIPT,0,0,0,CONSENSUS_FORKID_TX_AMMOUT);
     BOOST_REQUIRE_EQUAL(result, verify_result_eval_true);
 }
 

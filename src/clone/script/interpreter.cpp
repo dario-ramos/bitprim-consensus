@@ -3,6 +3,7 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
+#include <iostream>
 #include "interpreter.h"
 
 #include "primitives/transaction.h"
@@ -187,7 +188,7 @@ bool static IsDefinedHashtypeSignature(const valtype &vchSig) {
     if (vchSig.size() == 0) {
         return false;
     }
-    unsigned char nHashType = vchSig[vchSig.size() - 1] & (~(SIGHASH_ANYONECANPAY));
+    unsigned char nHashType = vchSig[vchSig.size() - 1] & (~(SIGHASH_ANYONECANPAY | SIGHASH_FORKID));
     if (nHashType < SIGHASH_ALL || nHashType > SIGHASH_SINGLE)
         return false;
 
@@ -887,6 +888,7 @@ bool EvalScript(vector<vector<unsigned char> >& stack, const CScript& script, un
                     valtype& vchSig    = stacktop(-2);
                     valtype& vchPubKey = stacktop(-1);
 
+
                     // Subset of script starting at the most recent codeseparator
                     CScript scriptCode(pbegincodehash, pend);
 
@@ -1177,7 +1179,7 @@ PrecomputedTransactionData::PrecomputedTransactionData(const CTransaction& txTo)
 
 uint256 SignatureHash(const CScript& scriptCode, const CTransaction& txTo, unsigned int nIn, int nHashType, const CAmount& amount, SigVersion sigversion, const PrecomputedTransactionData* cache)
 {
-    if (sigversion == SIGVERSION_WITNESS_V0) {
+    if (sigversion == SIGVERSION_WITNESS_V0 || nHashType & SIGHASH_FORKID) {
         uint256 hashPrevouts;
         uint256 hashSequence;
         uint256 hashOutputs;
@@ -1218,7 +1220,6 @@ uint256 SignatureHash(const CScript& scriptCode, const CTransaction& txTo, unsig
         ss << txTo.nLockTime;
         // Sighash type
         ss << nHashType;
-
         return ss.GetHash();
     }
 
@@ -1260,6 +1261,7 @@ bool TransactionSignatureChecker::CheckSig(const vector<unsigned char>& vchSigIn
     vector<unsigned char> vchSig(vchSigIn);
     if (vchSig.empty())
         return false;
+
     int nHashType = vchSig.back();
     vchSig.pop_back();
 
@@ -1424,6 +1426,7 @@ bool VerifyScript(const CScript& scriptSig, const CScript& scriptPubKey, const C
     if (!EvalScript(stack, scriptSig, flags, checker, SIGVERSION_BASE, serror))
         // serror is set
         return false;
+
     if (flags & SCRIPT_VERIFY_P2SH)
         stackCopy = stack;
     if (!EvalScript(stack, scriptPubKey, flags, checker, SIGVERSION_BASE, serror))
@@ -1431,6 +1434,7 @@ bool VerifyScript(const CScript& scriptSig, const CScript& scriptPubKey, const C
         return false;
     if (stack.empty())
         return set_error(serror, SCRIPT_ERR_EVAL_FALSE);
+
     if (CastToBool(stack.back()) == false)
         return set_error(serror, SCRIPT_ERR_EVAL_FALSE);
 
