@@ -162,6 +162,16 @@ BOOST_AUTO_TEST_CASE(consensus__script_verify__valid__true__forkid)
     BOOST_REQUIRE_EQUAL(result, verify_result_eval_true);
 }
 
+BOOST_AUTO_TEST_CASE(consensus__script_verify__valid__true__forkid_long_int)
+{
+    std::string CONSENSUS_FORKID_TX="02000000016d4a52bbec92aca5014955a2d1d317f54a684dcc8b2ade9f9f1b5f873eb0933100000000694630430220058750aaa604cde20738ba2ae9949685b06f62c441e22e5e1374b422adde3865021f0c27d7f71603a86ebf05e7de0d29923d0616de03424bcbb858408fb8247d50412102a105d2380adc8f6b1148eab7db12098bb3860c5d856a24452fd6c6d63ba53e17feffffff0210270000000000001976a914bf9350c2ff5b147c33cab3307974f9a298b92a0688ac43b7052a010000001976a9149705d4b593f98f34e19a5961199db0ed7f04ebaf88ac23a31100";
+    std::string CONSENSUS_FORKID_TX_PREV_SCRIPT = "76a914b939fdc5c4dd28318fd80b4203dc43003c4353ec88ac";
+    unsigned long int CONSENSUS_FORKID_TX_AMMOUT = 5000000000;
+
+    const verify_result result = test_verify(CONSENSUS_FORKID_TX, CONSENSUS_FORKID_TX_PREV_SCRIPT,0,0,0,CONSENSUS_FORKID_TX_AMMOUT);
+    BOOST_REQUIRE_EQUAL(result, verify_result_eval_true);
+}
+
 // TODO: create negative test vector.
 //BOOST_AUTO_TEST_CASE(consensus__script_verify__invalid__false)
 //{

@@ -178,7 +178,7 @@ unsigned int verify_flags_to_script_flags(unsigned int flags)
 verify_result_type verify_script(const unsigned char* transaction,
     size_t transaction_size, const unsigned char* prevout_script,
     size_t prevout_script_size, unsigned int tx_input_index,
-    unsigned int flags, unsigned int amount)
+    unsigned int flags, unsigned long int amount)
 {
 
     if (transaction_size > 0 && transaction == NULL)
