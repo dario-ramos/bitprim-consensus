@@ -209,6 +209,13 @@ bool CheckSignatureEncoding(const vector<unsigned char> &vchSig, unsigned int fl
     } else if ((flags & SCRIPT_VERIFY_STRICTENC) != 0 && !IsDefinedHashtypeSignature(vchSig)) {
         return set_error(serror, SCRIPT_ERR_SIG_HASHTYPE);
     }
+
+    // ABC - Checkpoints must be after the UAHF start block
+    bool usesForkId = vchSig[vchSig.size() - 1] & SIGHASH_FORKID;
+    if (!usesForkId) {
+        return set_error(serror, SCRIPT_ERR_SIG_HASHTYPE);
+    }
+
     return true;
 }
 
