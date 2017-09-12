@@ -22,6 +22,7 @@
 #include <cstddef>
 #include <bitcoin/consensus/define.hpp>
 #include <bitcoin/consensus/version.hpp>
+#include <cstdint>
 
 namespace libbitcoin {
 namespace consensus {
@@ -185,7 +186,7 @@ typedef enum verify_flags_type
  BCK_API verify_result_type verify_script(const unsigned char* transaction,
     size_t transaction_size, const unsigned char* prevout_script,
     size_t prevout_script_size, unsigned int tx_input_index,
-    unsigned int flags, unsigned long int amount);
+    unsigned int flags, int64_t amount);
 
 } // namespace consensus
 } // namespace libbitcoin
