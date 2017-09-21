@@ -100,7 +100,7 @@ $ sudo make install
 
 `bitprim-consensus` is now installed in `/usr/local/`.
 
-### Windows with Visual Studio
+#### Windows with Visual Studio
 
 This project, unlike secp256k1, has external dependencies such as boost.
 The easiest way to build them is to use Conan from the CMake script,
