@@ -105,9 +105,6 @@ $ sudo make install
 This project, unlike secp256k1, has external dependencies such as boost.
 The easiest way to build them is to use Conan from the CMake script,
 which will install boost and other libraries in non-system directories.
-Asides from the Conan flags, the BOOST_INCLUDE_DIR variable is required.
-A sample value is shown below, but you will need to check your system in `C:\.conan`
-after running `conan install ..` to see where the boost headers get installed.
 
 From a [Visual Studio Developer Command Prompt](https://docs.microsoft.com/en-us/dotnet/framework/tools/developer-command-prompt-for-vs):
 
@@ -123,3 +120,4 @@ $ msbuild ALL_BUILD.vcxproj
 ```
 
 [badge.Gitter]: https://img.shields.io/badge/gitter-join%20chat-blue.svg
+    
